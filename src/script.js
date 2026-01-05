@@ -150,6 +150,26 @@ class ToDo {
     this.saveItemsToLocalStorage()
     this.render()
   }
+
+  filter() {
+    const queryFormatted = this.state.searchQuery.toLowerCase()
+
+    this.state.filteredItems = this.state.items.filter(({ title }) => {
+      const titleFormatted = title.toLowerCase()
+
+      return titleFormatted.includes(queryFormatted)
+    })
+
+    this.render()
+  }
+
+  resetFilter() {
+    this.state.filteredItems = null
+    this.state.searchQuery = ''
+    this.render()
+  }
+
+
 }
 
 new Todo()
