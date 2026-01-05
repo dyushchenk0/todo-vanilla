@@ -29,8 +29,8 @@ class ToDo {
     this.searchTaskFormElement = this.rootElement.querySelector(this.selectors.searchTaskForm)
     this.searchTaskInputElement = this.rootElement.querySelector(this.selectors.searchTaskInput)
     this.totalTasksElement = this.rootElement.querySelector(this.selectors.totalTasks)
-    this.deleteAllButtonElement = this.rootElement.querySelector(this.selectors.list)
-    this.listElement = this.rootElement.querySelector(this.selectors.newTaskForm)
+    this.deleteAllButtonElement = this.rootElement.querySelector(this.selectors.deleteAllButton)
+    this.listElement = this.rootElement.querySelector(this.selectors.list)
     this.emptyMessageElement = this.rootElement.querySelector(this.selectors.emptyMessage)
     this.state = {
       items: this.getItemsFromLocalStorage(),
@@ -38,6 +38,7 @@ class ToDo {
       searchQuery: '',
     }
     this.render()
+    this.bindEvents()
   }
 
   getItemsFromLocalStorage() {
@@ -70,7 +71,7 @@ class ToDo {
 
     const items = this.state.filteredItems ?? this.state.items
 
-    this.listElement.innerHTML = items.map((id, title, isChecked) => `
+    this.listElement.innerHTML = items.map(({ id, title, isChecked }) => `
     <li
       class="todo__item todo-item"
       data-js-todo-item
@@ -94,7 +95,7 @@ class ToDo {
         type="button"
         aria-label="delete"
         title="delete"
-        data-js-todo-item-label-delete-button
+        data-js-todo-item-delete-button
       >
         <svg
           width="20"
@@ -169,7 +170,71 @@ class ToDo {
     this.render()
   }
 
+  onNewTaskFormSubmit = (event) => {
+    event.preventDefault()
 
+    const newTodoItemTitle = this.newTaskInputElement.value
+
+    if (newTodoItemTitle.trim().length > 0) {
+      this.addItem(newTodoItemTitle)
+      this.resetFilter()
+      this.newTaskInputElement.value = ''
+      this.newTaskInputElement.focus()
+    }
+  }
+
+  onSearchTaskFormSubmit = (event) => {
+    event.preventDefault()
+  }
+
+  onSearchTaskInputChange = ({ target }) => {
+    const value = target.value.trim()
+
+    if (value.length > 0) {
+      this.state.searchQuery = value
+      this.filter()
+    } else {
+      this.resetFilter()
+    }
+  }
+
+  onDeleteButtonClick = () => {
+    const isConfirmed = confirm('Are you sure you want to delete all?')
+
+    if (isConfirmed) {
+      this.state.items = []
+      this.saveItemsToLocalStorage()
+      this.render()
+    }
+  }
+
+  onClick = ({ target }) => {
+    if (target.matches(this.selectors.itemDeleteButton)) {
+      const itemElement = target.closest(this.selectors.item)
+      const itemCheckboxElement = itemElement.querySelector(this.selectors.itemCheckbox)
+
+      itemElement.classList.add(this.stateClasses.isDisappearing)
+
+      setTimeout(() => {
+        this.deleteItem(itemCheckboxElement.id)
+      }, 400)
+    }
+  }
+
+  onChange = ({ target }) => {
+    if (target.matches(this.selectors.itemCheckbox)) {
+      this.toggleCheckedState(target.id)
+    }
+  }
+
+  bindEvents() {
+    this.newTaskFormElement.addEventListener('submit', this.onNewTaskFormSubmit)
+    this.searchTaskFormElement.addEventListener('submit', this.onSearchTaskFormSubmit)
+    this.searchTaskInputElement.addEventListener('input', this.onSearchTaskInputChange)
+    this.deleteAllButtonElement.addEventListener('click', this.onDeleteButtonClick)
+    this.listElement.addEventListener('click', this.onClick)
+    this.listElement.addEventListener('change', this.onChange)
+  }
 }
 
-new Todo()
+new ToDo()
