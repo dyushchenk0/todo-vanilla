@@ -70,7 +70,7 @@ class ToDo {
 
     const items = this.state.filteredItems ?? this.state.items
 
-    this.listElement.innerHTML = items.map(( id, title, isChecked) => `
+    this.listElement.innerHTML = items.map((id, title, isChecked) => `
     <li
       class="todo__item todo-item"
       data-js-todo-item
@@ -119,6 +119,36 @@ class ToDo {
     const isEmptyItems = this.state.items.length === 0
 
     this.emptyMessageElement.textContent = isEmptyFilteredItems ? 'Tasks not found' : isEmptyItems ? 'There are no tasks yet' : ''
+  }
+
+  addItem(title) {
+    this.state.items.push({
+      id: crypto?.randomUUID() ?? Date.now().toString(),
+      title,
+      isChecked: false,
+    })
+    this.saveItemsToLocalStorage()
+    this.render()
+  }
+
+  deleteItem(id) {
+    this.state.items = this.state.items.filter((item) => item.id !== id)
+    this.saveItemsToLocalStorage()
+    this.render()
+  }
+
+  toggleCheckedState(id) {
+    this.state.items = this.state.items.map((item) => {
+      if (item.id === id) {
+        return {
+          ...item,
+          isChecked: !item.isChecked,
+        }
+      }
+      return item
+    })
+    this.saveItemsToLocalStorage()
+    this.render()
   }
 }
 
